@@ -53,10 +53,10 @@ def batch_simulate(p,N=100):
 def visualize_scatter(data):
     N = data["N"]
     plt.close()
-    plt.scatter(range(1, N), data["Cont"], s=1, color="red", label="Contaminations by Trial")
+    plt.scatter(range(1, N), data["Cont"], s=1, color="red", label="Contaminations by trial")
     plt.plot(range(1, N), data["Mean"], '-', color="purple", label="Mean")
     plt.xlabel("Trial")
-    plt.ylabel("Number of Contaminations")
+    plt.ylabel("Number of contaminations during trial")
     plt.xlim(1,N)
     plt.ylim(1,np.max(sorted(data["Hist"].keys())))
     plt.legend(shadow=True)
@@ -71,7 +71,7 @@ def visualize_hist(data):
     plt.close()
     plt.hist(cont, bins=[s-.5 for s in keys+[keys[-1]+3]], normed=1, width=1, facecolor='red')
     plt.xlim(0,np.max(keys))
-    plt.xlabel("Number of contaminations over " + str(N) + " trials")
+    plt.xlabel("Number of contaminations during trial")
     plt.ylabel("Portion of Trials")
     plt.savefig('hist.png')
 
