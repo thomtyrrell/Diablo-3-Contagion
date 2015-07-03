@@ -53,7 +53,7 @@ def batch_simulate(p,N=100):
 def visualize_scatter(data):
     N = data["N"]
     plt.close()
-    plt.scatter(range(1, N), data["Cont"], s=1, color="red", label="Contaminations by trial")
+    plt.scatter(range(1, N), data["Cont"], s=1, color="red", label="Contaminations during trial")
     plt.plot(range(1, N), data["Mean"], '-', color="purple", label="Mean")
     plt.xlabel("Trial")
     plt.ylabel("Number of contaminations during trial")
