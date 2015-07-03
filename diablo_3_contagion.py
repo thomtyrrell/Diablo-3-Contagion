@@ -10,7 +10,7 @@
 # So, p(n) = p^n, where p = p(1) the initial chance to spread
 
 # We will model each outbreak using a counter.  The keys will count the iteration
-# of a mark.  We use the key 0 to keep track of the total number of marked enemies.
+# of a mark. 
 
 import collections
 import numpy as np
