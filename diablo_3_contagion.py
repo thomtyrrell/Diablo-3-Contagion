@@ -62,6 +62,7 @@ def visualize_scatter(data):
     plt.legend(shadow=True)
     plt.savefig(str(N) + ' trial graph.png')
     print "Mean number of contaminations over " + str(N) + " trials is " + str(data["Mean"][-1]*1.)
+    print "Standard Deviation of number of contaminations over " + str(N) + " trials is " + str(numpy.std(data["Cont"]))
 
 
 def visualize_hist(data):
