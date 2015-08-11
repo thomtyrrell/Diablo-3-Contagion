@@ -75,6 +75,35 @@ def visual_hist(data):
     plt.savefig('hist.png')
 
 
+def gamma_density_approx(data):
+    data_mean = data["Mean"][-1]*1.
+    data_std = np.std(data["Cont"])
+    theta = (data_std) ** 2 / data_mean
+    k = data_mean/theta
+    gamma_density = lambda x: 1 / ( gamma(k) * theta ** k ) * x ** ( k - 1 ) * exp( -x / theta )
+    return gamma_density
+    
+    
+def visual_gamma_approx(data):
+    cont = np.array(data["Cont"])
+    max_cont = np.max(cont)
+    keys = sorted(data["Hist"].keys())
+    x = np.linspace(0,max_cont)
+    gamma = gamma_density_approx(data)
+    y = gamma(x)
+    plt.close()
+
+    plt.hist(cont, bins=[s-.5 for s in keys+[keys[-1]+3]], normed=1, width=1, facecolor='red', label="Data")
+    plt.plot(x,y,'-',color="purple",label="Gamma Distribution")
+
+    plt.xlim(0,max_cont)
+    plt.xlabel("Number of contaminations during trial")
+    plt.ylabel("Portion of Trials")
+    plt.legend(shadow=True,loc=1)
+
+    plt.savefig('hist.png')
+    
+    
 def visual_expect(prob_spread=exp_spread,P=.75,N=100):
     x = np.linspace(0, P)
     y = np.array([batch_simulate(p,prob_spread,N)["Mean"][-1] for p in x])
@@ -87,31 +116,6 @@ def visual_expect(prob_spread=exp_spread,P=.75,N=100):
     plt.ylabel("Number of contaminations")
     plt.savefig(str(N) + ' trial graph.png')
     
-def gamma_density_approx(data):
-    data_mean = data["Mean"][-1]*1.
-    data_std = np.std(data["Cont"])
-    theta = (data_std) ** 2 / data_mean
-    k = data_mean/theta
-    gamma_density = lambda x: 1 / ( gamma(k) * theta ** k ) * x ** ( k - 1 ) * exp( -x / theta )
-    return gamma_density
-    
-def visual_gamma_approx(data):
-    cont = np.array(data["Cont"])
-    max_cont = np.max(cont)
-    keys = sorted(data["Hist"].keys())
-    x = np.linspace(0,max_cont)
-    gamma = gamma_density_approx(data)
-    y = gamma(x)
-    plt.close()
-
-    plt.hist(cont, bins=[s-.5 for s in keys+[keys[-1]+3]], normed=1, width=1, facecolor='red')
-    plt.plot(x,y,'-',color="purple")
-
-    plt.xlim(0,max_cont)
-    plt.xlabel("Number of contaminations during trial")
-    plt.ylabel("Portion of Trials")
-
-    plt.savefig('hist.png')
     
 def prob_x(n,s,p,prob_spread=exp_spread):
     if n == 1:
