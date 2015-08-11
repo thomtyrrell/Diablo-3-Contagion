@@ -1,7 +1,0 @@
-Diablo 3, Markov Chains, and Theta functions
-
-What is my goal with this project?
-
-1.  To motivate the study of statistics.  It has drawn on conditional probabilities, Markov chains, recursions, expectations.
-2.  To develop my programming and visualization skills.  I have learned many Python tricks in preparing this.
-3.  
