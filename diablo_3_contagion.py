@@ -23,34 +23,32 @@ import matplotlib.pyplot as plt
 # probabilistically.  We use numpy.random for random number generation.
 # Currently randomly chooses an enemy to kill
 
-# sim_contagion(...) will simulate probabilistically the number of marks in one outbreak.
-def sim_contagion(p):
+def exp_spread(p,m): return p ** m
+
+# sim_contagion(...) will simulate an outbreak and count the number of spreads.
+def sim_contagion(p, prob_spread=exp_spread):
     marks = collections.Counter({1: 3})
-    cont = 1
-    while len(marks.keys()) > 0:  # while there are enemies still alive
-        for m in marks.keys():
-            if marks[m] == 1:
-                del marks[m]
-            else:
-                marks[m] -= 1
+    n = 1
+    while marks[n] > 0:  # while there are enemies still alive
+        for _ in range(marks[n]):
             roll = rng.random()
-            if roll < p ** m:
-                marks[m + 1] += 3
-                cont += 1
-    return cont
+            if roll < prob_spread(p,n):
+                marks[n + 1] += 3
+        n += 1
+    return sum(np.array(marks.values()) / 3)
 
 
-def batch_simulate(p,N=100):
-    data = {"Cont":[],"Mean":[],"Hist":collections.Counter(),"p":p,"N":N}
+def batch_simulate(p,prob_spread=exp_spread,N=100):
+    data = {"Cont":[],"Mean":[],"Hist":collections.Counter(),"p":p,"spread":prob_spread,"N":N}
     for _ in range(1, N):
-        roll_cont = sim_contagion(p)
+        roll_cont = sim_contagion(p,prob_spread)
         data["Cont"].append(roll_cont)
         data["Mean"].append(np.mean(data["Cont"]))
         data["Hist"][roll_cont]+=1
     return data
 
 
-def visualize_scatter(data):
+def visual_scatter(data):
     N = data["N"]
     plt.close()
     plt.scatter(range(1, N), data["Cont"], s=1, color="red", label="Contaminations during trial")
@@ -62,10 +60,10 @@ def visualize_scatter(data):
     plt.legend(shadow=True)
     plt.savefig(str(N) + ' trial graph.png')
     print "Mean number of contaminations over " + str(N) + " trials is " + str(data["Mean"][-1]*1.)
-    print "Standard Deviation of number of contaminations over " + str(N) + " trials is " + str(numpy.std(data["Cont"]))
+    print "Standard Deviation of number of contaminations over " + str(N) + " trials is " + str(np.std(data["Cont"]))
 
 
-def visualize_hist(data):
+def visual_hist(data):
     N = data["N"]
     cont = np.array(data["Cont"])
     keys = sorted(data["Hist"].keys())
@@ -77,20 +75,54 @@ def visualize_hist(data):
     plt.savefig('hist.png')
 
 
-def visual_expect(P=.75,N=100):
+def visual_expect(prob_spread=exp_spread,P=.75,N=100):
     x = np.linspace(0, P)
-    y = np.array([batch_simulate(p,N)["Mean"][-1] for p in x])
-    y_exp = np.array([expect(p) for p in x])
+    y = np.array([batch_simulate(p,prob_spread,N)["Mean"][-1] for p in x])
+    y_exp = expect(x)
     plt.close()
     plt.plot(x, y, 'x', color="red", label="Mean number of contaminations after " + str(N) + " trials")
     plt.plot(x, y_exp, '-', color="purple", label="Expected number of contaminations")
-    plt.legend(shadow=True)
+    plt.legend(shadow=True,loc=2)
     plt.xlabel("Probability of Spreading")
     plt.ylabel("Number of contaminations")
     plt.savefig(str(N) + ' trial graph.png')
+    
+def gamma_density_approx(data):
+    data_mean = data["Mean"][-1]*1.
+    data_std = np.std(data["Cont"])
+    theta = (data_std) ** 2 / data_mean
+    k = data_mean/theta
+    gamma_density = lambda x: 1 / ( gamma(k) * theta ** k ) * x ** ( k - 1 ) * exp( -x / theta )
+    return gamma_density
+    
+def visual_gamma_approx(data):
+    cont = np.array(data["Cont"])
+    max_cont = np.max(cont)
+    keys = sorted(data["Hist"].keys())
+    x = np.linspace(0,max_cont)
+    gamma = gamma_density_approx(data)
+    y = gamma(x)
+    plt.close()
 
-# find formula for expected number of spreads
-# Theta functions?
-expect = lambda p, n_bar=150: sum([p ** ((n ** 2 - n) / 2) * 3 ** (n-1) for n in range(1,n_bar)])
-mass = lambda p, n: 3 ** (n - 1) * p ** ((n ** 2 - n)/2)
-poisson = lambda lam, k: lam ** k / factorial(k) * np.exp(-lam)
+    plt.hist(cont, bins=[s-.5 for s in keys+[keys[-1]+3]], normed=1, width=1, facecolor='red')
+    plt.plot(x,y,'-',color="purple")
+
+    plt.xlim(0,max_cont)
+    plt.xlabel("Number of contaminations during trial")
+    plt.ylabel("Portion of Trials")
+
+    plt.savefig('hist.png')
+    
+def prob_x(n,s,p,prob_spread=exp_spread):
+    if n == 1:
+        return binomial(3,s) * p ** s * ( 1 - p ) ** ( 3 - s )
+    else:
+        return sum([binomial(3 * r, s) * prob_spread(p,n) ** s * ( 1 - prob_spread(p,n) ) ** ( 3 * r - s ) * prob_x(n-1,r,p,prob_spread) for r in range( int(np.ceil( s / 3 )) , 3 ** ( n - 1 ) + 1 ) ] )
+
+def expect_x(n,p,prob_spread=exp_spread):
+    return sum([s * prob_x(n,s,p,prob_spread) for s in range(3 ** n + 1)])
+
+def expect(p,prob_spread=exp_spread,n_bar=150):
+    return sum([ 3 ** n * p ** ((n ** 2 + n) / 2) for n in range(n_bar)])
+
+
