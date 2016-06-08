@@ -33,6 +33,8 @@ import time
 def fixed_spread(p,m):
     return p
 
+def cos_spread(p,m):
+    return p ** (m + cos(m*pi/2))
 
 def exp_spread(p, m):
     return p ** m
@@ -171,6 +173,11 @@ def visual_stop_hist(data):
     plt.xlabel("Stopping time during trial")
     plt.ylabel("Portion of Trials")
     plt.savefig('hist.png')
+
+
+#
+# Approximation methods
+#
 
 
 def gamma_density_approx(data):
