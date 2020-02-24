@@ -154,9 +154,19 @@ def visual_stop(data):
 def visual_hist(data):
     cont = np.array(data["Cont"])
     cmax = np.max(cont)
+    x = range(50)
     plt.close()
+    
     plt.hist(cont, bins=[s - .5 for s in range(0, cmax + 1)], normed=1, width=1, facecolor='red')
-    plt.xlim(-1, cmax+1)
+    
+    p = data["p"]
+    H = [0] * 50
+    for k in range(50):
+        H[k] = 1.0 /(3*k+1) * factorial(3*k+1) / factorial(k) / factorial(2*k+1) * p ** k * (1 - p) ** (3*k + 1 -k)
+        print k,H[k]
+    plt.plot(x,H,'o',color="purple")
+    
+    plt.xlim(-1, 15)
     plt.xlabel("Number of contaminations during trial")
     plt.ylabel("Portion of Trials")
     plt.savefig('hist.png')
@@ -165,11 +175,22 @@ def visual_hist(data):
 def visual_stop_hist(data):
     stop = np.array(data["Stop"])
     max_stop = np.max(stop)
-    x = range(1, max_stop + 1)
+    x = range(1,max_stop + 1)
     plt.close()
 
     plt.hist(stop, bins=[s - .5 for s in range(0,max_stop+1)], normed=1, width=1, facecolor='red')
-    plt.xlim(0, max_stop + 1)
+    
+    p = data["p"]
+    a = 1 - p
+    S = [0] * max_stop
+    S[0] = a
+    for n in range(1, max_stop):
+        b = p * a ** 3 + 1 - p
+        S[n] = b - a
+        a = b
+    plt.plot(x,S,'o',color="purple")
+    
+    plt.xlim(0, 20)
     plt.xlabel("Stopping time during trial")
     plt.ylabel("Portion of Trials")
     plt.savefig('hist.png')

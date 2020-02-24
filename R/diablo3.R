@@ -36,3 +36,4 @@ chisq.test(cont_hist$density,dgamma(cont_hist$mids,a,scale=s))
 
 stops <- data$Depth
 hist(stops,main = "Total Duration per Contagion", breaks = seq(min(stops),max(stops),1), plot = TRUE, freq = FALSE)
+
